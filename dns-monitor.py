@@ -28,8 +28,17 @@ def main():
                         help="Default is to print all results. Keep output terse.")
     parser.add_argument('-W', '--timeout', dest='timeout', default=DEFAULT_DNS_TIMEOUT,
                         help='Time to wait fo DNS response. %s [seconds]' % DEFAULT_DNS_TIMEOUT)
-    parser.add_argument('--expected', metavar='EXPECTED_VALUE',
-                        help='Ignore local DNS. Monitor for an upcoming change. Wait for expected result to appear.')
+    parser.add_argument('--mode-match-authoritative-to-local', dest='mode_remote_compare_to_local',
+                        action='store_true',
+                        help='Mode: Monitor both local and authoritative DNS. Wait for their values to match.')
+    parser.add_argument('--mode-monitor-local-expected', dest='mode_local_expected', metavar='EXPECTED_VALUE',
+                        help='Monitor for an upcoming change. Wait for expected result to appear in local DNS.')
+    parser.add_argument('--mode-monitor-remote-expected', dest='mode_remote_expected', metavar='EXPECTED_VALUE',
+                        help='Monitor for an upcoming change. Wait for expected result to appear in authoritative DNS.')
+    parser.add_argument('--mode-monitor-local-change', dest='mode_local_change', action='store_true',
+                        help='Monitor for an upcoming change. Wait for local DNS value to change.')
+    parser.add_argument('--mode-monitor-remote-change', dest='mode_remote_change', action='store_true',
+                        help='Monitor for an upcoming change. Wait for authoritative DNS value to change.')
     parser.add_argument('--verbose', '-v', action='store_true', default=False,
                         help="Noisy. Output status.")
 
@@ -40,41 +49,66 @@ def main():
         exit(1)
 
     dns = DNS(default_resolver=args.local_dns, query_timeout=args.timeout)
-    monitor = Monitor(dns)
-    answers = dns.query(args.host, args.rr_type)
+    monitor = None
+    if args.mode_remote_compare_to_local:
+        monitor = MonitorRemoteCompareLocal(dns, additional_dns=args.additional_dns)
+    elif args.mode_local_expected:
+        monitor = MonitorLocalExpected(dns, args.mode_local_expected)
+    elif args.mode_remote_expected:
+        monitor = MonitorRemoteExpected(dns, additional_dns=args.additional_dns)
+    elif args.mode_local_change:
+        raise Exception("Not yet --mode-monitor-local-change !")
+    elif args.mode_remote_change:
+        raise Exception("Not yet --mode-monitor-remote-change !")
+    else:
+        print("Need --mode-* to operate. Cannot continue.", file=sys.stderr)
+        exit(1)
 
-    for rdata in answers:
-        if args.rr_type.upper() == 'A':
-            answer = rdata.address
-        elif args.rr_type.upper() == 'DNSKEY':
-            answer = '%s %s' % (rdata.__class__.__name__, str(rdata))
-        else:
-            answer = '%s %s' % (rdata.__class__.__name__, str(rdata))
-        print('Local server result for %s: %s' % (args.host, answer))
-
-    authorities = dns.find_authoritative_nameservers(args.host, verbose=args.verbose)
-
-    print("Found following authorities for %s:\n%s" % (
-        args.host,
-        '\n'.join("{!s} = {!s}".format(key, val) for (key, val) in authorities.items()))
-          )
-    if args.additional_dns:
-        print("Also using following DNS: %s" % (
-            ', '.join(val for val in args.additional_dns))
-              )
-    print("Comparing against your local nameserver: %s" % dns.default_ns)
+    monitor.init_monitor(args.host, args.rr_type)
 
     # Do a single pass only?
     args.timeout = int(args.timeout)
     if not args.interval:
-        monitor.single_pass(args.host, additional_dns=args.additional_dns, timeout=args.timeout,
-                            expected=args.expected, verbose=args.verbose)
+        if args.mode_remote_compare_to_local:
+            monitor.single_pass(args.host, args.rr_type,
+                                timeout=args.timeout, verbose=args.verbose)
+        elif args.mode_local_compare_to_remote:
+            raise Exception("Not yet --mode-monitor-local-to-match-remote !")
+        elif args.mode_local_expected:
+            monitor.single_pass(args.host, args.rr_type, expected=args.mode_local_expected,
+                                timeout=args.timeout, verbose=args.verbose)
+        elif args.mode_remote_expected:
+            monitor.single_pass(args.host, args.rr_type, expected=args.mode_remote_expected,
+                                timeout=args.timeout, verbose=args.verbose)
+        elif args.mode_local_change:
+            raise Exception("Not yet --mode-monitor-local-change !")
+        elif args.mode_remote_change:
+            raise Exception("Not yet --mode-monitor-remote-change !")
+        else:
+            raise Exception("Internal: Oh really?")
         exit(0)
 
-    monitor.continuous(args.host, interval=args.interval, only_fail=args.only_fail,
-                       stop_on_success=args.interval_stop_on_success,
-                       additional_dns=args.additional_dns, timeout=args.timeout,
-                       expected=args.expected, verbose=args.verbose)
+    if args.mode_remote_compare_to_local:
+        monitor.continuous(args.host, args.rr_type,
+                           interval=args.interval, only_fail=args.only_fail,
+                           stop_on_success=args.interval_stop_on_success,
+                           timeout=args.timeout, verbose=args.verbose)
+    elif args.mode_local_expected:
+        monitor.continuous(args.host, args.rr_type, expected=args.mode_local_expected,
+                           interval=args.interval, only_fail=args.only_fail,
+                           stop_on_success=args.interval_stop_on_success,
+                           timeout=args.timeout, verbose=args.verbose)
+    elif args.mode_remote_expected:
+        monitor.continuous(args.host, args.rr_type, expected=args.mode_remote_expected,
+                           interval=args.interval, only_fail=args.only_fail,
+                           stop_on_success=args.interval_stop_on_success,
+                           timeout=args.timeout, verbose=args.verbose)
+    elif args.mode_local_change:
+        raise Exception("Not yet --mode-monitor-local-change !")
+    elif args.mode_remote_change:
+        raise Exception("Not yet --mode-monitor-remote-change !")
+    else:
+        raise Exception("Internal: Oh really?")
 
 
 if __name__ == "__main__":
