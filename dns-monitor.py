@@ -22,7 +22,7 @@ def main():
                         help='Additional DNS-servers to use')
     parser.add_argument('-i', '--interval', dest='interval',
                         help='Keep looping forever with given interval')
-    parser.add_argument('--continue-on-success', dest='interval_stop_on_success', action='store_true', default=True,
+    parser.add_argument('--continue-on-success', dest='interval_stop_on_success', action='store_false', default=True,
                         help='Keep looping with given --interval even if a success is found')
     parser.add_argument('--print-only-fail', action='store_true', dest='only_fail',
                         help="Default is to print all results. Keep output terse.")

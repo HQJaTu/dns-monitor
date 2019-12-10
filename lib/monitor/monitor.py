@@ -51,26 +51,30 @@ class Monitor:
 
     def compare_local_and_remote(self, local_answers, authority_answers, additional_answers, verbose=False):
         replies = []
-        stat = True
+        statuses = {}
         for authority, answer in authority_answers.items():
             if answer != local_answers:
-                stat = False
+                statuses[authority] = False
                 replies.append("Authority %s not returning local result! returned: %s, expected %s" %
                                (authority, ', '.join(answer), ', '.join(local_answers))
                                )
-            elif verbose:
-                print("Authority %s ok. returned: %s" % (authority, ', '.join(answer)))
+            else:
+                statuses[authority] = True
+                if verbose:
+                    print("Authority %s ok. returned: %s" % (authority, ', '.join(answer)))
         if self.dns.authorities and not authority_answers:
             replies.append("No authority answers received!")
-            stat = False
         for additional_server, answer in additional_answers.items():
             if answer != local_answers:
-                stat = False
+                statuses[additional_server] = False
+                statuses = False
                 replies.append("Additional DNS %s fail! returned: %s" % (additional_server, ', '.join(answer)))
-            elif verbose:
-                print("Additional DNS %s ok. returned: %s" % (additional_server, ', '.join(answer)))
+            else:
+                statuses[additional_server] = True
+                if verbose:
+                    print("Additional DNS %s ok. returned: %s" % (additional_server, ', '.join(answer)))
 
-        return stat, replies
+        return statuses, replies
 
     def single_pass(self, *args, **kwargs):
         self.monitor(*args, **kwargs)
