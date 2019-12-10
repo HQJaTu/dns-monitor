@@ -6,10 +6,9 @@ from .monitor import Monitor
 class MonitorLocalExpected(Monitor):
 
     def __init__(self, dns, expected):
-        super(MonitorLocalExpected, self).__init__(dns)
+        super(MonitorLocalExpected, self).__init__(dns, additional_dns=None)
 
         self.expected = expected
-        self.additional_dns = None
         #print("Resolver: %s" % dns.default_resolver.nameservers)
 
     def compare(self, local_answers, verbose=False):
@@ -29,27 +28,30 @@ class MonitorLocalExpected(Monitor):
 
         return stat, replies
 
-    def monitor(self, host, rr_type, expected,
+    def monitor(self, host, rr_type,
                 timeout=None,
                 only_fail=False, stop_on_success=True, last_ok=None, verbose=False):
         answers, local_ttl = self.dns.run_local_query(host, rr_type,
                                                        verbose=verbose)
-        stat, messages = self.compare(answers, verbose=verbose)
+        success, messages = self.compare(answers, verbose=verbose)
         now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        if only_fail:
-            if stat:
-                last_ok = now
-                if stop_on_success:
-                    print("%s - queries ok.                               " % now, end="\r", flush=True)
-            else:
-                print("%s - Fail! Last ok: %s" % (now, last_ok), flush=True)
-        else:
-            if stat:
-                print("%s - queries ok. Local DNS TTL %d seconds      " %
-                      (now, local_ttl), end="\r", flush=True)
-            else:
-                print("\n%s - Fail! Last ok: %s" % (now, last_ok), end="\r", flush=True)
-                if messages:
-                    print("\n".join(messages), end='')
 
-        return stat, messages, last_ok, local_ttl
+        if success:
+            last_ok = now
+            output = "%s - queries ok. Local DNS TTL %d seconds" % (now, local_ttl)
+        else:
+            output = "%s - Fail! Local DNS TTL %d seconds. Last ok: %s" % \
+                     (now, local_ttl, last_ok)
+
+        if success:
+            if not only_fail or stop_on_success:
+                print(output, end="\r", flush=True)
+        else:
+            if only_fail:
+                print("\n%s", output, flush=True)
+                if verbose:
+                    print("\n".join(messages), end='')
+            else:
+                print(output, flush=True)
+
+        return success, messages, last_ok, local_ttl

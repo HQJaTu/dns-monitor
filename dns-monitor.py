@@ -57,7 +57,7 @@ def main():
     elif args.mode_remote_expected:
         monitor = MonitorRemoteExpected(dns, additional_dns=args.additional_dns)
     elif args.mode_local_change:
-        raise Exception("Not yet --mode-monitor-local-change !")
+        monitor = MonitorLocalChange(dns, args.host, args.rr_type)
     elif args.mode_remote_change:
         raise Exception("Not yet --mode-monitor-remote-change !")
     else:
@@ -75,13 +75,14 @@ def main():
         elif args.mode_local_compare_to_remote:
             raise Exception("Not yet --mode-monitor-local-to-match-remote !")
         elif args.mode_local_expected:
-            monitor.single_pass(args.host, args.rr_type, expected=args.mode_local_expected,
+            monitor.single_pass(args.host, args.rr_type,
                                 timeout=args.timeout, verbose=args.verbose)
         elif args.mode_remote_expected:
-            monitor.single_pass(args.host, args.rr_type, expected=args.mode_remote_expected,
+            monitor.single_pass(args.host, args.rr_type,
                                 timeout=args.timeout, verbose=args.verbose)
         elif args.mode_local_change:
-            raise Exception("Not yet --mode-monitor-local-change !")
+            monitor.single_pass(None, None,
+                                timeout=args.timeout, verbose=args.verbose)
         elif args.mode_remote_change:
             raise Exception("Not yet --mode-monitor-remote-change !")
         else:
@@ -94,17 +95,20 @@ def main():
                            stop_on_success=args.interval_stop_on_success,
                            timeout=args.timeout, verbose=args.verbose)
     elif args.mode_local_expected:
-        monitor.continuous(args.host, args.rr_type, expected=args.mode_local_expected,
+        monitor.continuous(args.host, args.rr_type,
                            interval=args.interval, only_fail=args.only_fail,
                            stop_on_success=args.interval_stop_on_success,
                            timeout=args.timeout, verbose=args.verbose)
     elif args.mode_remote_expected:
-        monitor.continuous(args.host, args.rr_type, expected=args.mode_remote_expected,
+        monitor.continuous(args.host, args.rr_type,
                            interval=args.interval, only_fail=args.only_fail,
                            stop_on_success=args.interval_stop_on_success,
                            timeout=args.timeout, verbose=args.verbose)
     elif args.mode_local_change:
-        raise Exception("Not yet --mode-monitor-local-change !")
+        monitor.continuous(None, None,
+                           interval=args.interval, only_fail=args.only_fail,
+                           stop_on_success=args.interval_stop_on_success,
+                           timeout=args.timeout, verbose=args.verbose)
     elif args.mode_remote_change:
         raise Exception("Not yet --mode-monitor-remote-change !")
     else:
