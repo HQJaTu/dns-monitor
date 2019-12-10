@@ -3,6 +3,10 @@ from .monitor import Monitor
 
 
 class MonitorAuthoritativeCompareLocal(Monitor):
+    """
+    Find authoritative DNS for given record.
+    Monitor for its value to match local.
+    """
 
     def __init__(self, dns, additional_dns=None):
         super(MonitorAuthoritativeCompareLocal, self).__init__(dns, additional_dns=additional_dns)

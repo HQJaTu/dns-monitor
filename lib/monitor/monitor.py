@@ -35,6 +35,19 @@ class Monitor:
                 ', '.join(val for val in self.additional_dns))
                   )
 
+    def get_parents_of_authority(self, host, verbose=False):
+        raise Exception("Not yet implemented!")
+        authorities = self.dns.find_authoritative_nameservers(host, verbose=verbose)
+
+        print("Found following authorities for %s:\n%s" % (
+            host,
+            '\n'.join("{!s} = {!s}".format(key, val) for (key, val) in authorities.items()))
+              )
+        if self.additional_dns:
+            print("Also using following DNS: %s" % (
+                ', '.join(val for val in self.additional_dns))
+                  )
+
     def local_query(self, host, rr_type):
         answers = self.dns.query(host, rr_type)
 
