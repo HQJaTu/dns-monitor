@@ -2,10 +2,10 @@ import datetime
 from .monitor import Monitor
 
 
-class MonitorRemoteCompareLocal(Monitor):
+class MonitorAuthoritativeCompareLocal(Monitor):
 
     def __init__(self, dns, additional_dns=None):
-        super(MonitorRemoteCompareLocal, self).__init__(dns, additional_dns=additional_dns)
+        super(MonitorAuthoritativeCompareLocal, self).__init__(dns, additional_dns=additional_dns)
 
         self.initial_local_answers = None
 

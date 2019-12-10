@@ -28,7 +28,7 @@ def main():
                         help="Default is to print all results. Keep output terse.")
     parser.add_argument('-W', '--timeout', dest='timeout', default=DEFAULT_DNS_TIMEOUT,
                         help='Time to wait fo DNS response. %s [seconds]' % DEFAULT_DNS_TIMEOUT)
-    parser.add_argument('--mode-match-authoritative-to-local', dest='mode_remote_compare_to_local',
+    parser.add_argument('--mode-match-authoritative-to-local', dest='mode_authoritive_compare_to_local',
                         action='store_true',
                         help='Mode: Monitor both local and authoritative DNS. Wait for their values to match.')
     parser.add_argument('--mode-monitor-local-expected', dest='mode_local_expected', metavar='EXPECTED_VALUE',
@@ -50,12 +50,12 @@ def main():
 
     dns = DNS(default_resolver=args.local_dns, query_timeout=args.timeout)
     monitor = None
-    if args.mode_remote_compare_to_local:
-        monitor = MonitorRemoteCompareLocal(dns, additional_dns=args.additional_dns)
+    if args.mode_authoritive_compare_to_local:
+        monitor = MonitorAuthoritativeCompareLocal(dns, additional_dns=args.additional_dns)
     elif args.mode_local_expected:
         monitor = MonitorLocalExpected(dns, args.mode_local_expected)
     elif args.mode_remote_expected:
-        monitor = MonitorRemoteExpected(dns, additional_dns=args.additional_dns)
+        monitor = MonitorAuthoritativeExpected(dns, additional_dns=args.additional_dns)
     elif args.mode_local_change:
         monitor = MonitorLocalChange(dns, args.host, args.rr_type)
     elif args.mode_remote_change:
@@ -69,7 +69,7 @@ def main():
     # Do a single pass only?
     args.timeout = int(args.timeout)
     if not args.interval:
-        if args.mode_remote_compare_to_local:
+        if args.mode_authoritive_compare_to_local:
             monitor.single_pass(args.host, args.rr_type,
                                 timeout=args.timeout, verbose=args.verbose)
         elif args.mode_local_compare_to_remote:
@@ -89,7 +89,7 @@ def main():
             raise Exception("Internal: Oh really?")
         exit(0)
 
-    if args.mode_remote_compare_to_local:
+    if args.mode_authoritive_compare_to_local:
         monitor.continuous(args.host, args.rr_type,
                            interval=args.interval, only_fail=args.only_fail,
                            stop_on_success=args.interval_stop_on_success,

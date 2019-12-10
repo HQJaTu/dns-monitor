@@ -2,10 +2,10 @@ import datetime
 from .monitor import Monitor
 
 
-class MonitorRemoteExpected(Monitor):
+class MonitorAuthoritativeExpected(Monitor):
 
     def __init__(self, dns, additional_dns=None):
-        super(MonitorRemoteExpected, self).__init__(dns, additional_dns=additional_dns)
+        super(MonitorAuthoritativeExpected, self).__init__(dns, additional_dns=additional_dns)
         pass
 
     def init_monitor(self, host_to_query, rr_type_to_query, verbose=False):
