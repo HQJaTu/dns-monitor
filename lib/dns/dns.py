@@ -115,7 +115,7 @@ class DNS:
 
     def _make_query(self, host_to_query, rr_type_to_query):
         # Dynamically whip up a class from given string
-        rr_type = getattr(dns.rdatatype, rr_type_to_query)
+        rr_type = dns.rdatatype.from_text(rr_type_to_query)
         if not rr_type:
             raise Exception("Cannot query for unknown RR-type '%s'" % rr_type_to_query)
         query_request = dns.message.make_query(host_to_query, rr_type)
