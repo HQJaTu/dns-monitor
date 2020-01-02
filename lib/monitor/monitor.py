@@ -35,8 +35,12 @@ class Monitor:
                 ', '.join(val for val in self.additional_dns))
                   )
 
-    def get_parents_of_authority(self, host, verbose=False):
-        raise Exception("Not yet implemented!")
+    def get_parents_of_authority(self, host_in, verbose=False):
+        host = host_in.split('.')
+        if len(host) < 2:
+            raise Exception("get_parents_of_authority() will fail for host '%s'. Doesn't have a parent!" % host_in)
+
+        host = '.'.join(host[1:])
         authorities = self.dns.find_authoritative_nameservers(host, verbose=verbose)
 
         print("Found following authorities for %s:\n%s" % (

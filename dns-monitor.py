@@ -81,8 +81,6 @@ def main():
         elif args.mode_parent_authoritative_compare_to_local:
             monitor.single_pass(args.host, args.rr_type,
                                 timeout=args.timeout, verbose=args.verbose)
-        elif args.mode_local_compare_to_remote:
-            raise Exception("Not yet --mode-monitor-local-to-match-remote !")
         elif args.mode_local_expected:
             monitor.single_pass(args.host, args.rr_type,
                                 timeout=args.timeout, verbose=args.verbose)

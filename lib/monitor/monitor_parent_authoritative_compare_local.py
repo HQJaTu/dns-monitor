@@ -1,8 +1,8 @@
 import datetime
-from .monitor import Monitor
+from .monitor_authoritative_compare_local import MonitorAuthoritativeCompareLocal
 
 
-class MonitorParentAuthoritativeCompareLocal(Monitor):
+class MonitorParentAuthoritativeCompareLocal(MonitorAuthoritativeCompareLocal):
     """
     Find parent of authoritative DNS for given record.
     Monitor for its value to match local.
@@ -13,4 +13,11 @@ class MonitorParentAuthoritativeCompareLocal(Monitor):
         super(MonitorParentAuthoritativeCompareLocal, self).__init__(dns, additional_dns=additional_dns)
 
         self.initial_local_answers = None
-        raise Exception("Not yet implemented!")
+
+    def init_monitor(self, host_to_query, rr_type_to_query, verbose=False):
+        # Do local first
+        self.initial_local_answers, local_ttl = self.dns.run_local_query(host_to_query, rr_type_to_query,
+                                                                         verbose=verbose)
+        print("Comparing against your local nameserver: %s" % self.dns.default_ns)
+
+        self.get_parents_of_authority(host_to_query, verbose=verbose)
