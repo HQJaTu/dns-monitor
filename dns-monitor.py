@@ -4,8 +4,8 @@
 
 import sys
 import argparse
-from lib.dns import *
-from lib.monitor import *
+from dns_monitor_lib.dns import *
+from dns_monitor_lib.monitor import *
 
 DEFAULT_DNS_TIMEOUT = 5.0
 
